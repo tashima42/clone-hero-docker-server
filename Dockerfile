@@ -1,4 +1,4 @@
-FROM registry.suse.com/bci/bci-base:15.7 AS build-env
+FROM registry.suse.com/bci/bci-base:15.6 AS build-env
 
 ARG TAG
 
@@ -9,6 +9,8 @@ RUN zypper install -y unzip wget
 
 COPY ./settings.ini .
 
+RUN wget -qO libopenssl1_0_0.rpm https://download.opensuse.org/distribution/leap/15.6/repo/oss/x86_64/libopenssl1_0_0-1.0.2p-150000.3.91.1.x86_64.rpm
+
 RUN wget -qO chserver.zip https://github.com/clonehero-game/releases/releases/download/${TAG}/CloneHero-standalone_server.zip \
  && unzip chserver.zip
 
@@ -16,16 +18,21 @@ RUN mv ./ChStandaloneServer-*-final/linux-x64/Server ./Server
 
 RUN chmod +x ./Server
 
-FROM registry.suse.com/bci/bci-base:15.7
+
+FROM registry.suse.com/bci/bci-base:15.6
 
 RUN useradd -m clonehero
 
+COPY --from=build-env /clonehero/libopenssl1_0_0.rpm .
+RUN zypper --non-interactive install libopenssl1_0_0.rpm
 
+RUN zypper --non-interactive install icu
+
+RUN mkdir /usr/src/clonehero && chown clonehero /usr/src/clonehero
+USER clonehero
 WORKDIR /usr/src/clonehero
-RUN chown -R 777 .
 
 COPY --from=build-env /clonehero/Server ./Server
-USER clonehero
 
 ENV NAME="Clone Hero Docker Server"
 ENV PASS="test"
