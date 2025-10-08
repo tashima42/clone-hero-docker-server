@@ -1,4 +1,7 @@
 FROM debian:buster-slim AS build-env
+
+ARG TAG
+
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /clonehero
 RUN apt-get update \
@@ -8,7 +11,7 @@ RUN apt-get update \
 
 COPY ./settings.ini .
 
-RUN wget -qO chserver.zip https://github.com/clonehero-game/releases/releases/download/V1.0.0.4080/CloneHero-standalone_server.zip \
+RUN wget -qO chserver.zip https://github.com/clonehero-game/releases/releases/download/${TAG}/CloneHero-standalone_server.zip \
  && unzip chserver.zip \
  && rm ./chserver.zip \
  && mv ./ChStandaloneServer-* ./chserver \
